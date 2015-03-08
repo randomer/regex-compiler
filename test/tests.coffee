@@ -5,7 +5,7 @@ expect = chai.expect
 {Pattern} = require('../src/regexify.coffee')
 
 getExampleObject = ->
-	pattern: 'protocol://www.subdomain.domain.tld/address/'
+	pattern: 'protocol://www.subdomain.domain.tld/address'
 	protocol: {}
 	www: {}
 	subdomain: {}
@@ -44,8 +44,8 @@ describe 'Pattern', ->
 			'tld'
 			'/'
 			'address'
-			'/'
-			''
+			# '/'
+			# ''
 		]
 	it 'should check whether every key is described', ->
 		keysObject = getExampleObject()
@@ -58,9 +58,9 @@ describe 'Pattern', ->
 		ptn = new Pattern keysObject
 		(-> ptn.checkKeys()).should.throw "'protocol' is not an object"
 		keysObject = getExampleObject()
-		keysObject.subdomain = []
-		ptn = new Pattern keysObject
-		(-> ptn.checkKeys()).should.throw "'subdomain' is not an object"
+		# keysObject.subdomain = []
+		# ptn = new Pattern keysObject
+		# (-> ptn.checkKeys()).should.throw "'subdomain' is not an object"
 		keysObject = getExampleObject()
 		keysObject.domain = -> retrun 0
 		ptn = new Pattern keysObject
@@ -77,7 +77,7 @@ describe 'Pattern', ->
 		keysObject = getExampleObject()
 		ptn = new Pattern keysObject
 		r = ptn.getRegex()
-		expect(fullMatch 'protocol://www.subdomain.domain.tld/address/', r).to.be.true
+		expect(fullMatch 'protocol://www.subdomain.domain.tld/address', r).to.be.true
 		# r.test(keysObject.pattern).should.be.true
 		# keysObject.pattern.test(r).should.be.true
 	it 'should check for the chars property', ->
@@ -120,3 +120,28 @@ describe 'Pattern', ->
 				length: '4'
 		.getRegex()
 		expect(fullMatch '555-5555', r).to.be.true
+
+	it 'should treat arrays as different options (OR)', ->
+		keysObject = getExampleObject()
+		keysObject.protocol = ['http', 'https']
+		r = new Pattern(keysObject).getRegex()
+
+		m = fullMatch 'http://www.subdomain.domain.tld/address', r
+		expect(m).to.be.true
+		m = fullMatch 'https://www.subdomain.domain.tld/address', r
+		expect(m).to.be.true
+		m = fullMatch 'protocol://www.subdomain.domain.tld/address', r
+		expect(m).to.be.false
+	
+	it 'should be able to process regexes inside keys', ->
+		keysObject = getExampleObject()
+		keysObject.protocol = /https|http/
+		debugger
+		r = new Pattern(keysObject).getRegex()
+
+		m = fullMatch 'http://www.subdomain.domain.tld/address', r
+		expect(m).to.be.true
+		m = fullMatch 'https://www.subdomain.domain.tld/address', r
+		expect(m).to.be.true
+		m = fullMatch 'protocol://www.subdomain.domain.tld/address', r
+		expect(m).to.be.false

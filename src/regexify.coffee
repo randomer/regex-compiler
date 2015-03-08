@@ -3,6 +3,7 @@ escapeSpecialChars = (str) ->
 
 isEmpty = (obj) ->
 	#! Doesn't check for inherited properties
+	if obj == null then return true
 	
 	if obj.length > 0 then return false
 	if obj.length == 0 then return true
@@ -14,6 +15,12 @@ isEmpty = (obj) ->
 
 applyRules = (rulesObj) ->
 	result = ''
+
+	if rulesObj.constructor == Array
+		return '(?:' + rulesObj.join('|') + ')'
+	else if rulesObj.constructor == RegExp
+		# [compatibility] https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source#Example.3A_Empty_regular_expressions_and_escaping
+		return '(?:' + rulesObj.source + ')'
 
 	rule = rulesObj.chars
 	if rule
@@ -76,7 +83,7 @@ class Pattern
 		for k in keys
 			v = @obj[k]
 			# Check if 'v' is an object:
-			if v != null && !(v instanceof Array) && typeof v == 'object'
+			if v != null && typeof v == 'object' # && !(v instanceof Array)
 				continue
 			else if v == undefined
 				e = new Error "'#{k}' is not described"
@@ -91,16 +98,16 @@ class Pattern
 		regex = []
 		for k in @getKeys()
 			if k.search(/\w/) != -1
-				if !isEmpty @obj[k] # Patterns
+				if !isEmpty(@obj[k]) || @obj[k].constructor == RegExp # Pattern
 					regex.push applyRules @obj[k]
-				else # Literal words
+				else # Literal word
 					regex.push k
 			else # Symbols
 				regex.push escapeSpecialChars k
-		final = RegExp('\\b' + regex.join('') + '\\b')
-		# final = new RegExp(regex.join(''))
-		console.log '\t' + final
-		return final
+		result = RegExp('\\b' + regex.join('') + '\\b')
+		# result = new RegExp(regex.join(''))
+		console.log '\t' + result
+		return result
 
 regexify = (patternObj) ->
 	if !patternObj.pattern

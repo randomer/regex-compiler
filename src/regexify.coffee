@@ -1,3 +1,5 @@
+'use strict'
+
 escapeSpecialChars = (str) ->
 	return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 

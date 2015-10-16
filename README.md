@@ -1,9 +1,9 @@
 # regex-compiler
 
-## The problem
+## Problem
 For something like "colou?r" regular expressions are neat. However, they get cumbersome and unwieldy pretty quickly when you try to do something more serious, like verify a user's nickname or URL: they become unreadable, non-maintainable and hard-to-edit programmatically.
 
-## The solution
+## Solution
 With this module you can describe regular expressions using singleton objects. Let's describe a phone number:
 
 ```coffee
